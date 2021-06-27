@@ -6,7 +6,7 @@ import paho.mqtt.client as mqtt
 broker = "test.mosquitto.org"
 
 class Example(QWidget):
-    cash_queue = 0    
+    cash_queue = -1    
     credit_cards_queue = 0
     other_transactions_queue = 0
     def __init__(self):
@@ -29,6 +29,8 @@ class Example(QWidget):
     def on_message_cash(self, client, userdata, message): 
         self.cash_queue = self.cash_queue + 1
         print("A" + str(self.cash_queue))
+        buff = message.payload.decode("utf-8")
+        print(buff)
         self.lcd.display(message.payload.decode("utf-8"))
     
 
