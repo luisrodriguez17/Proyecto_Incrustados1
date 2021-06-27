@@ -70,7 +70,7 @@ class Window(QMainWindow):
     def cashbox(self):
         print("cajas")
         
-        client.publish("clientes/cajas", self.cashbox_count)
+        client.publish("clients/cash", self.cashbox_count)
         if(self.client_counter >= MAX_CLIENT):
             self.client_counter = 0
         if(self.cashbox_count >= MAX_QUEUE):
