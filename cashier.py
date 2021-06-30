@@ -17,6 +17,7 @@ import queue
 
 import sys
 
+
 broker = "test.mosquitto.org"
 
 client = mqtt.Client()
@@ -24,11 +25,10 @@ client.connect(broker, 1883, 60)
 
 
 
-
-
 class cashier(QMainWindow):
+
     # This queues are for the cashier to see how many clients he has to attend
-    cash_queue = 0    
+    cash_queue = 0
     credit_cards_queue = 0
     other_transactions_queue = 0
 
@@ -36,10 +36,6 @@ class cashier(QMainWindow):
         mqtt_client = mqtt.Client()
         super(cashier, self).__init__()
         self.initUI()
-        
-        #cash_queue = 0
-        #credit_cards_queue = 0
-        #other_transactions_queue = 0
 
     # This function controls buttons, labels and its properties
     def initUI(self):
@@ -103,23 +99,32 @@ class cashier(QMainWindow):
         self.otherTransactionsButton.setText("Take a client for the other transactions queue")
         self.otherTransactionsButton.setGeometry(550,300, 270, 30)
         self.otherTransactionsButton.clicked.connect(self.otherTransactionsButtonPressed)
+            
+        
+        
 
     # Actions for the buttons
     def cashButtonPressed(self):
-        print("Taking a client from the cash queue")
-        self.cash_queue = self.cash_queue - 1
-        self.cash_queue_number.setNum(self.cash_queue)
-        client.publish("clients/serving", "A" + str(self.cash_queue))
+        if(self.cash_queue > 0):
+            print("Taking a client from the cash queue")
+            self.cash_queue = self.cash_queue - 1
+            self.cash_queue_number.setNum(self.cash_queue)
+            client.publish("clients/serving/cash", "A" + str(self.cash_queue))
     
     def creditCardsButtonPressed(self):
-        print("Taking a client from the credit cards queue")
-        self.credit_cards_queue = self.credit_cards_queue - 1
-        self.creditCards_queue_number.setNum(self.credit_cards_queue)
+        if(self.credit_cards_queue > 0):
+            print("Taking a client from the credit cards queue")
+            self.credit_cards_queue = self.credit_cards_queue - 1
+            self.creditCards_queue_number.setNum(self.credit_cards_queue)
+            client.publish("clients/serving/credit", "B" + str(self.credit_cards_queue))
 
     def otherTransactionsButtonPressed(self):
-        print("Taking a client from the other transactions queue")
-        self.other_transactions_queue = self.other_transactions_queue - 1
-        self.otherTransactions_queue_number.setNum(self.other_transactions_queue)
+        if(self.other_transactions_queue > 0):
+            print("Taking a client from the other transactions queue")
+            self.other_transactions_queue = self.other_transactions_queue - 1
+            self.otherTransactions_queue_number.setNum(self.other_transactions_queue)
+            client.publish("clients/serving/other", "C" + str(self.other_transactions_queue))
+        
     
     # Change the label for the cash queue when a new client requests assistance 
     def on_message_cash(self, client, userdata, message): 
@@ -135,17 +140,49 @@ class cashier(QMainWindow):
         self.otherTransactions_queue_number.setNum(self.other_transactions_queue)
 
 if __name__ == "__main__":
+    if len(sys.argv) == 2:
+
+        if sys.argv[1] == "-ch":
+            print("Service: Cash")
+            app1 = QtWidgets.QApplication(sys.argv)
+            cashierWindow1 = cashier()
+            cashierWindow1.setGeometry(800, 300, 850, 400)
+            mqtt_client1 = mqtt.Client()
+            mqtt_client1.connect("test.mosquitto.org", 1883)
+            mqtt_client1.on_message = cashierWindow1.on_message_cash # Topic to be subs, basically which transaction
+            mqtt_client1.subscribe("clients/cash")
+            mqtt_client1.loop_start()
+            cashierWindow1.show()
+            sys.exit(app1.exec())
+        if sys.argv[1] == "-cr":
+            print("Service: Credit")
+            app2 = QtWidgets.QApplication(sys.argv)
+            cashierWindow2 = cashier()
+            cashierWindow2.setGeometry(800, 300, 850, 400)
+            mqtt_client2 = mqtt.Client()
+            mqtt_client2.connect("test.mosquitto.org", 1883)
+            mqtt_client2.on_message = cashierWindow2.on_message_credit # Topic to be subs, basically which transaction
+            mqtt_client2.subscribe("clients/credit")
+            mqtt_client2.loop_start()
+            cashierWindow2.show()
+            sys.exit(app2.exec())
+        if sys.argv[1] == "-ot":
+            print("Service: Other")
+            app3 = QtWidgets.QApplication(sys.argv)
+            cashierWindow3 = cashier()
+            cashierWindow3.setGeometry(800, 300, 850, 400)
+            mqtt_client3 = mqtt.Client()
+            mqtt_client3.connect("test.mosquitto.org", 1883)
+            mqtt_client3.on_message = cashierWindow3.on_message_other # Topic to be subs, basically which transaction
+            mqtt_client3.subscribe("clients/other")
+            mqtt_client3.loop_start()
+            cashierWindow3.show()
+            sys.exit(app3.exec())
+        else: 
+            print("You need to add the type of service: -ch (for cash), -cr (for credit) or -ot (for other)")
+    else: 
+        print("You need to add the type of service: -ch (for cash), -cr (for credit) or -ot (for other) ** Just one **")
     
-    app = QtWidgets.QApplication([])
-    cashierWindow = cashier()
-    cashierWindow.setGeometry(800, 300, 850, 400)
-    mqtt_client = mqtt.Client()
-    mqtt_client.connect("test.mosquitto.org", 1883)
-    mqtt_client.on_message = cashierWindow.on_message_cash # Topic to be subs, basically which transaction
-    mqtt_client.subscribe("clients/cash")
-    mqtt_client.loop_start()
-    cashierWindow.show()
-    sys.exit(app.exec())
 
     
 

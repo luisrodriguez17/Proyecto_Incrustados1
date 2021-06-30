@@ -85,8 +85,33 @@ if __name__ == "__main__":
     mqtt_client.on_message = widget.on_message_cash_topic
     # keep listening to the broker
     mqtt_client.loop_start()
-    mqtt_client.subscribe("clients/serving")
+    mqtt_client.subscribe("clients/serving/cash")
     widget.set_client(mqtt_client)
+
+
+    mqtt_client2 = mqtt.Client()
+    # Broker and port 1883 is not secure
+    mqtt_client2.connect("test.mosquitto.org", 1883)
+    #When getting a new message call this function
+    mqtt_client2.on_message = widget.on_message_credit_topic
+    # keep listening to the broker
+    mqtt_client2.loop_start()
+    mqtt_client2.subscribe("clients/serving/credit")
+    widget.set_client(mqtt_client2)
+
+
+    mqtt_client3 = mqtt.Client()
+    # Broker and port 1883 is not secure
+    mqtt_client3.connect("test.mosquitto.org", 1883)
+    #When getting a new message call this function
+    mqtt_client3.on_message = widget.on_message_other_topic
+    # keep listening to the broker
+    mqtt_client3.loop_start()
+    mqtt_client3.subscribe("clients/serving/other")
+    widget.set_client(mqtt_client3)
+
+
+
 
     # Stuff for the widgets, window size
     widget.resize(800, 600)

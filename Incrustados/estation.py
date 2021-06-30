@@ -68,7 +68,7 @@ class Window(QMainWindow):
         self.show()
 
     def cashbox(self):
-        print("cajas")
+        print("cash")
         
         client.publish("clients/cash", self.cashbox_count)
         if(self.client_counter >= MAX_CLIENT):
@@ -78,12 +78,12 @@ class Window(QMainWindow):
         else:
             self.cashbox_count += 1
             self.client_counter += 1
-        client.publish("clientes/tiquete", self.client_counter)
+        client.publish("clients/tiquet", self.client_counter)
         
 
     def plataform(self):
-        print("plataforma")
-        client.publish("clientes/plataforma", self.plataform_count)
+        print("other")
+        client.publish("clients/other", self.plataform_count)
         if(self.client_counter >= MAX_CLIENT):
             self.client_counter = 0
         if(self.plataform_count >= MAX_QUEUE):
@@ -91,12 +91,12 @@ class Window(QMainWindow):
         else:
             self.client_counter += 1
             self.plataform_count += 1
-        client.publish("clientes/tiquete", self.client_counter)
+        client.publish("clients/tiquet", self.client_counter)
 
 
     def credit(self):
-        print("credito")
-        client.publish("clientes/credito", self.credit_count)
+        print("credit")
+        client.publish("clients/credit", self.credit_count)
         if(self.client_counter >= 1000):
             self.client_counter = 0
         if(self.credit_count >= MAX_QUEUE):
@@ -104,7 +104,7 @@ class Window(QMainWindow):
         else:
             self.client_counter += 1
             self.cashbox_count += 1
-        client.publish("clientes/tiquete", self.client_counter)
+        client.publish("clients/tiquet", self.client_counter)
 
 def run():
     app = QApplication(sys.argv)
